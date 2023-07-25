@@ -2,7 +2,7 @@ cd $HOME
 
 git clone --bare https://bitbucket.org/durdn/cfg.git $HOME/.cfg
 function config {
-   /usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME $@
+   git --git-dir=$HOME/.cfg/ --work-tree=$HOME $@
 }
 mkdir -p .config-backup
 config checkout
