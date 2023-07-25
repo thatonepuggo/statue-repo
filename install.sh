@@ -1,6 +1,7 @@
 cd $HOME
+repo=https://gitlab.com/thatonepuggo/dots
 
-git clone --bare https://bitbucket.org/durdn/cfg.git $HOME/.cfg
+git clone --bare $repo $HOME/.cfg
 function config {
    git --git-dir=$HOME/.cfg/ --work-tree=$HOME $@
 }
