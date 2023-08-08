@@ -25,6 +25,7 @@ if [ "$(grep -E '^NAME=' /etc/os-release)" == "Arch Linux" ]; then
    echo 'system is arch linux. getting paru..'
    echo $sep
    paru_d=$HOME/dev/paru
+   sudo pacman -Syu
    mkdir $HOME/dev/
    git clone https://aur.archlinux.org/paru.git $paru_d
    cd $paru_d
