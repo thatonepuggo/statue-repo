@@ -20,7 +20,7 @@ fi;
 config checkout
 config config status.showUntrackedFiles no
 
-if [ "$(grep -E '^NAME=' /etc/os-release)" == "Arch Linux" ]; then
+if [ "$(grep -E '^NAME=' /etc/os-release)" == "NAME=\"Arch Linux\"" ]; then
    echo $sep
    echo 'system is arch linux. getting paru..'
    echo $sep
