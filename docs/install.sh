@@ -6,7 +6,7 @@ echo $sep
 echo 'installing dotfiles...'
 echo $sep
 git clone --bare $repo $HOME/.cfg
-function config {
+config() {
    git --git-dir=$HOME/.cfg/ --work-tree=$HOME $@
 }
 mkdir -p .config-backup
