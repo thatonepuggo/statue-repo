@@ -3,11 +3,13 @@ import subprocess
 import os
 import pathlib
 import re
-import importlib
+import importlib.util
 
-def mod_is_avail(mod, pkg_name=mod):
-    loader = importlib.find_loader(mod)
-    if not loader:
+def mod_is_avail(mod, pkg_name=None):
+    if not pkg_name:
+        pkg_name = mod
+    spec = importlib.util.find_spec(mod)
+    if not spec:
         print(f"!!! could not find module {mod}! please install the python package {pkg_name}! !!!")
         exit(1)
 
