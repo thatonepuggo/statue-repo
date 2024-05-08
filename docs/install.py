@@ -71,7 +71,7 @@ if distro.id() == "arch" or distro.like() == "arch":
     pathlib.Path(home + '/dev').mkdir(parents=True, exist_ok=True)
     
     os.chdir(home + '/dev')
-    subprocess.run(['git', 'clone', yay_repo, yay_dir], check=True)
+    subprocess.run(['git', 'clone', yay_repo, yay_dir])
     os.chdir(yay_dir)
     if os.system('makepkg -si') != 0:
         print(EXIT_BAD_EXITCODE)
