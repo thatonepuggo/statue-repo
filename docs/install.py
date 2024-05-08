@@ -59,15 +59,19 @@ subprocess.run(config_cmd + ["config", "status.showUntrackedFiles", "no"], check
 
 print("success")
 
+EXIT_BAD_EXITCODE = "exited with non-zero exit code"
+
 if distro.id() == "arch" or distro.like() == "arch":
     print(sep)
     print("system is arch linux. getting yay..")
     print(sep)
-    subprocess.run(['sudo', 'pacman', '-Syu', '--needed', 'git', 'base-devel'], check=True)
+    if os.system('sudo pacman -Syu --needed git base-devel') != 0
+        print(EXIT_BAD_EXITCODE)
 
     pathlib.Path(home + '/dev').mkdir(parents=True, exist_ok=True)
     
     os.chdir(home + '/dev')
     subprocess.run(['git', 'clone', yay_repo, yay_dir], check=True)
     os.chdir(yay_dir)
-    subprocess.run(['makepkg', '-si'], check=True)
+    if os.system('makepkg -si') != 0:
+        print(EXIT_BAD_EXITCODE)
