@@ -3,12 +3,12 @@ import subprocess
 import os
 import pathlib
 import re
-import imp
+import importlib
+found = spam_loader is not None
 
 def mod_is_avail(mod, pkg_name=mod):
-    try:
-        imp.find_module(mod)
-    except ImportError:
+    loader = importlib.find_loader(mod)
+    if not loader:
         print(f"!!! could not find module {mod}! please install the python package {pkg_name}! !!!")
         exit(1)
 
