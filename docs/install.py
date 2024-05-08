@@ -65,7 +65,7 @@ if distro.id() == "arch" or distro.like() == "arch":
     print(sep)
     print("system is arch linux. getting yay..")
     print(sep)
-    if os.system('sudo pacman -Syu --needed git base-devel') != 0
+    if os.system('sudo pacman -Syu --needed git base-devel') != 0:
         print(EXIT_BAD_EXITCODE)
 
     pathlib.Path(home + '/dev').mkdir(parents=True, exist_ok=True)
