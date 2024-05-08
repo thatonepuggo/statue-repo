@@ -3,6 +3,16 @@ import subprocess
 import os
 import pathlib
 import re
+import imp
+
+def mod_is_avail(mod, pkg_name=mod):
+    try:
+        imp.find_module(mod)
+    except ImportError:
+        print(f"!!! could not find module {mod}! please install the python package {pkg_name}! !!!")
+        exit(1)
+
+mod_is_avail("distro")
 import distro
 
 if os.geteuid() == 0:
@@ -46,7 +56,9 @@ except subprocess.CalledProcessError as e:
 subprocess.run(config_cmd + ["checkout"], check=True)
 subprocess.run(config_cmd + ["config", "status.showUntrackedFiles", "no"], check=True)
 
-if distro.like() == "arch":
+print("success")
+
+if distro.id() == "arch" or distro.like() == "arch":
     print(sep)
     print("system is arch linux. getting yay..")
     print(sep)
