@@ -4,7 +4,6 @@ import os
 import pathlib
 import re
 import importlib
-found = spam_loader is not None
 
 def mod_is_avail(mod, pkg_name=mod):
     loader = importlib.find_loader(mod)
