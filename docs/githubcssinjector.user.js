@@ -26,7 +26,7 @@ font-family: "Webdings", "Comic Sans MS";
 TODO:
 - make the css stack so you can have chains of people adding onto the css
 */
-const SELECTOR = "div.comment-body pre, article pre";
+const SELECTOR = "div.highlight pre, article pre";
 
 const PREFIX = "@@@INJECT_CSS@@@";
 const SUFFIX = "@@@END@@@";
@@ -70,6 +70,7 @@ function addStyle(styleString) {
 
 function doCodeBlock(elem) {
   var cssToAdd = elem.innerText.trim();
+  console.log(elem);
 
   cssToAdd = ifStartsReplace(cssToAdd, PREFIX);
   cssToAdd = ifEndsReplace(cssToAdd, SUFFIX);
