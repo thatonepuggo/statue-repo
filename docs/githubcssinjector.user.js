@@ -189,7 +189,6 @@ selectEvent(SELECTOR, {
 
   after: (event) => {
     stylesheet = stylesheet.trim();
-    console.log(stylesheet);
 
     var exists = !!styleElement;
     var changed = exists && stylesheet !== styleElement.textContent;
