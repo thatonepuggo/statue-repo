@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       *://github.com/**
 // @grant       none
-// @version     1.0
+// @version     1.2
 // @author      Pug
 // @description allows css injection on github
 // @downloadURL https://github.com/thatonepuggo/statue-repo/raw/master/docs/githubcssinjector.user.js
@@ -165,7 +165,7 @@ function selectEvent(selector, eventData = defaultEventData, root = document.doc
 
 selectEvent(SELECTOR, {
   before: (event) => {
-    if (event.caller == EventCaller.observer)
+    if (event.caller === EventCaller.observer)
       return;
     stylesheet = "";
   },
@@ -209,8 +209,8 @@ setInterval(() => {
   if (location.href !== currentUrl) {
     currentUrl = location.href;
     if (styleElement)
-      styleElement.remove();
+      styleElement.textContent = "";
   }
-}, 500);
+}, 100);
 
 console.log("%cLOADED!", 'font-size: 100px; font-family: "Papyrus", "Comic Sans MS", sans-serif;');
