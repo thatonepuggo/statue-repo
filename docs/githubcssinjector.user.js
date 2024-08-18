@@ -5,7 +5,9 @@
 // @grant       none
 // @version     1.0
 // @author      Pug
-// @description 8/17/2024, 2:36:13 PM
+// @description allows css injection on github
+// @downloadURL https://github.com/thatonepuggo/statue-repo/raw/master/docs/githubcssinjector.user.js
+// @updateURL https://github.com/thatonepuggo/statue-repo/raw/master/docs/githubcssinjector.user.js
 // ==/UserScript==
 
 /*
@@ -141,5 +143,15 @@ function selectEvent(selector, func, root = document.documentElement) {
 
 // main //
 
-console.log("%cLOADED", "font-size: 100px;");
+
+console.log("%cLOADED", "font-size: 100px; font-family: \"Papyrus\", sans-serif;");
 selectEvent(SELECTOR, doCodeBlock);
+
+
+var currentUrl = location.href;
+setInterval(() => {
+  if (location.href !== currentUrl) {
+    currentUrl = location.href;
+    styleElement.remove();
+  }
+}, 500);
