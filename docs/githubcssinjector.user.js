@@ -25,76 +25,40 @@ font-family: "Webdings", "Comic Sans MS";
 @@@END@@@
 ```
 
-TODO:
-- make the css stack so you can have chains of people adding onto the css
 */
 const SELECTOR = "div pre code, div.highlight pre, article pre";
 
 const PREFIX = "@@@INJECT_CSS@@@";
 const SUFFIX = "@@@END@@@";
 
+const ELEMENT_ID = "pug-css-injection";
+
 let styleElement;
+let stylesheet = "";
+let currentUrl = location.href;
 
 // string functions //
-function reverseString(str) {
-    return str.split("").reverse().join("");
-}
 
-function ifStartsReplace(str, check, replace = "") {
-  var ret = str;
-  if (str.startsWith(check)) {
-    ret = replace + str.substr(check.length);
+String.prototype.reverse = String.prototype.reverse || function() {
+    return this.split("").reverse().join("");
+};
+
+String.prototype.ifStartsWithReplace = String.prototype.ifStartsWithReplace || function(check, replace = "") {
+  if (this.startsWith(check)) {
+    return replace + this.substr(check.length);
   }
-  return ret;
-}
+  return this;
+};
 
-function ifEndsReplace(str, check, replace = "") {
-  var ret = str;
-  if (str.endsWith(check)) {
+String.prototype.ifEndsWithReplace = String.prototype.ifEndsWithReplace || function(check, replace = "") {
+  if (this.endsWith(check)) {
     // there might be a better way of doing this but idc
-    ret = reverseString(reverseString(ret).substr(check.length)) + replace;
+    return this.reverse().substr(check.length).reverse() + replace;
   }
-  return ret;
-}
+  return this;
+};
 
-// add style sheet //
 
-function addStyle(styleString) {
-  var exists = !!styleElement;
-  if (!exists) {
-    styleElement = document.createElement('style');
-    styleElement.id = "pug-github-css-injection-stylesheet";
-  }
-  styleElement.textContent = styleString;
-  if (!exists)
-    document.head.append(styleElement);
-}
-
-function doCodeBlock(elem) {
-  var cssToAdd = elem.innerText.trim();
-
-  cssToAdd = ifStartsReplace(cssToAdd, PREFIX);
-  cssToAdd = ifEndsReplace(cssToAdd, SUFFIX);
-
-  if (cssToAdd === elem.innerText) {
-    // nothing changed
-    return;
-  }
-
-  addStyle(cssToAdd);
-
-  /*
-  var newElem = document.createElement("pre");
-  newElem.style = cssToAdd;
-  newElem.innerText = elem.innerText;
-  newElem.setAttribute(MARK_ATTR, true);
-  elem.parentElement.insertAdjacentElement("beforeend", newElem);
-  console.log("stufsdafsdf")
-  console.log(newElem);
-  */
-
-  elem.parentElement.remove();
-}
 
 
 function addAll(set, list) {
@@ -123,35 +87,131 @@ function applySelector(selector, records) {
   return [...result]; // Result is an array, or just return the set
 }
 
-function selectEvent(selector, func, root = document.documentElement) {
-  // for newly created elements
+// selectEvent
+
+function warnEmpty(name) {
+  console.log(`%cWARNING! The function '${name}' is empty!`, "color: orange;");
+}
+
+let defaultEventData = {
+  before: warnEmpty.bind("before"),
+  during: warnEmpty.bind("during"),
+  after: warnEmpty.bind("after"),
+};
+
+const EventPosition = {
+  before: 0,
+  during: 1,
+  after: 2,
+};
+
+const EventCaller = {
+  observer: 0,
+  interval: 1,
+};
+
+function selectEvent(selector, eventData = defaultEventData, root = document.documentElement) {
+  let defaultEvent = {
+    selector: selector,
+    position: EventPosition.before,
+  };
+
+
   const observer = new MutationObserver((records) => {
+    var event = defaultEvent;
+    event.caller = EventCaller.observer;
+
+    // before
+    eventData.before(event);
+
+    // during
+    event.position = EventPosition.during;
     var elems = applySelector(selector, records);
     for (const elem of elems) {
-      func(elem);
+      event.element = elem;
+      eventData.during(event);
     }
+
+    // after
+    event.position = EventPosition.after;
+    eventData.after(event);
   });
 
   observer.observe(root, { childList: true, subtree: true });
 
-  // for existing elements
-  var elems = root.querySelectorAll(selector);
-  for (const elem of elems) {
-    func(elem);
-  }
+
+  setInterval(() => {
+    var event = defaultEvent;
+    event.caller = EventCaller.interval;
+
+    // before
+    eventData.before(event);
+
+    // during
+    event.position = EventPosition.during;
+    var elems = root.querySelectorAll(selector);
+    for (const elem of elems) {
+      event.element = elem;
+      eventData.during(event);
+    }
+
+    // after
+    event.position = EventPosition.after;
+    eventData.after(event);
+  }, 1000);
 }
 
 // main //
 
+selectEvent(SELECTOR, {
+  before: (event) => {
+    if (event.caller == EventCaller.observer)
+      return;
+    stylesheet = "";
+  },
 
-console.log("%cLOADED", "font-size: 100px; font-family: \"Papyrus\", sans-serif;");
-selectEvent(SELECTOR, doCodeBlock);
+  during: (event) => {
+    var elem = event.element;
 
+    var cssToAdd = elem.innerText.trim();
+    cssToAdd = cssToAdd.ifStartsWithReplace(PREFIX);
+    cssToAdd = cssToAdd.ifEndsWithReplace(SUFFIX);
 
-var currentUrl = location.href;
+    if (cssToAdd === elem.innerText) {
+      // nothing changed
+      return;
+    }
+
+    stylesheet += cssToAdd;
+
+    elem.parentElement.hidden = true;
+  },
+
+  after: (event) => {
+    stylesheet = stylesheet.trim();
+    console.log(stylesheet);
+
+    var exists = !!styleElement;
+    var changed = exists && stylesheet !== styleElement.textContent;
+
+    if (!exists) {
+      styleElement = document.createElement("style");
+      styleElement.id = ELEMENT_ID;
+    }
+    if (changed)
+      styleElement.textContent = stylesheet;
+
+    if (!exists)
+      document.head.append(styleElement);
+  },
+});
+
 setInterval(() => {
   if (location.href !== currentUrl) {
     currentUrl = location.href;
-    styleElement.remove();
+    if (styleElement)
+      styleElement.remove();
   }
 }, 500);
+
+console.log("%cLOADED!", 'font-size: 100px; font-family: "Papyrus", "Comic Sans MS", sans-serif;');
