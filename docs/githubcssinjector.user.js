@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        GitHub CSS Injection
 // @namespace   Violentmonkey Scripts
-// @match       https://github.com/**
+// @match       *://github.com/**
 // @grant       none
 // @version     1.0
 // @author      Pug
@@ -26,7 +26,7 @@ font-family: "Webdings", "Comic Sans MS";
 TODO:
 - make the css stack so you can have chains of people adding onto the css
 */
-const SELECTOR = "div.highlight pre, article pre";
+const SELECTOR = "div pre code, div.highlight pre, article pre";
 
 const PREFIX = "@@@INJECT_CSS@@@";
 const SUFFIX = "@@@END@@@";
@@ -70,7 +70,6 @@ function addStyle(styleString) {
 
 function doCodeBlock(elem) {
   var cssToAdd = elem.innerText.trim();
-  console.log(elem);
 
   cssToAdd = ifStartsReplace(cssToAdd, PREFIX);
   cssToAdd = ifEndsReplace(cssToAdd, SUFFIX);
@@ -81,8 +80,8 @@ function doCodeBlock(elem) {
   }
 
   addStyle(cssToAdd);
-  /*
 
+  /*
   var newElem = document.createElement("pre");
   newElem.style = cssToAdd;
   newElem.innerText = elem.innerText;
@@ -122,13 +121,25 @@ function applySelector(selector, records) {
   return [...result]; // Result is an array, or just return the set
 }
 
+function selectEvent(selector, func, root = document.documentElement) {
+  // for newly created elements
+  const observer = new MutationObserver((records) => {
+    var elems = applySelector(selector, records);
+    for (const elem of elems) {
+      func(elem);
+    }
+  });
+
+  observer.observe(root, { childList: true, subtree: true });
+
+  // for existing elements
+  var elems = root.querySelectorAll(selector);
+  for (const elem of elems) {
+    func(elem);
+  }
+}
+
 // main //
 
-const observer = new MutationObserver((records) => {
-  var elems = applySelector(SELECTOR, records);
-  for (const elem of elems) {
-    doCodeBlock(elem);
-  }
-});
-
-observer.observe(document.documentElement, { childList: true, subtree: true });
+console.log("%cLOADED", "font-size: 100px;");
+selectEvent(SELECTOR, doCodeBlock);
