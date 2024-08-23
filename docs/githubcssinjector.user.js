@@ -12,24 +12,24 @@
 
 /*
 how to use:
-create a code block and add @@@INJECT_CSS@@@ to the beginning and @@@END@@@ to the end
+create a code block and add @@@BEGIN_CSS_INJECTION@@@ to the beginning and @@@END_CSS_INJECTION@@@ to the end
 add your css in between
 
 example:
 
 ```
-@@@INJECT_CSS@@@
+@@@BEGIN_CSS_INJECTION@@@
 :is(p, h1, h2, h3, h4, h5, h6, span):hover {
 font-family: "Webdings", "Comic Sans MS";
 }
-@@@END@@@
+@@@END_CSS_INJECTION@@@
 ```
 
 */
 const SELECTOR = "div pre code, div.highlight pre, article pre";
 
-const PREFIX = "@@@INJECT_CSS@@@";
-const SUFFIX = "@@@END@@@";
+const PREFIX = "@@@BEGIN_CSS_INJECTION@@@";
+const SUFFIX = "@@@END_CSS_INJECTION@@@";
 
 const ELEMENT_ID = "pug-css-injection";
 
@@ -40,7 +40,7 @@ let currentUrl = location.href;
 // string functions //
 
 String.prototype.reverse = String.prototype.reverse || function() {
-    return this.split("").reverse().join("");
+  return this.split("").reverse().join("");
 };
 
 String.prototype.ifStartsWithReplace = String.prototype.ifStartsWithReplace || function(check, replace = "") {
@@ -77,7 +77,7 @@ function applySelector(selector, records) {
       if (node.nodeType === 1) {
         // Add it if it's a match
         if (node.matches(selector)) {
-            result.add(node);
+          result.add(node);
         }
         // Add any children
         addAll(result, node.querySelectorAll(selector));
@@ -115,15 +115,15 @@ function selectEvent(selector, eventData = defaultEventData, root = document.doc
     selector: selector,
     position: EventPosition.before,
   };
-
-
+  
+  
   const observer = new MutationObserver((records) => {
     var event = defaultEvent;
     event.caller = EventCaller.observer;
-
+    
     // before
     eventData.before(event);
-
+    
     // during
     event.position = EventPosition.during;
     var elems = applySelector(selector, records);
@@ -131,22 +131,22 @@ function selectEvent(selector, eventData = defaultEventData, root = document.doc
       event.element = elem;
       eventData.during(event);
     }
-
+    
     // after
     event.position = EventPosition.after;
     eventData.after(event);
   });
-
+  
   observer.observe(root, { childList: true, subtree: true });
-
-
+  
+  
   setInterval(() => {
     var event = defaultEvent;
     event.caller = EventCaller.interval;
-
+    
     // before
     eventData.before(event);
-
+    
     // during
     event.position = EventPosition.during;
     var elems = root.querySelectorAll(selector);
@@ -154,7 +154,7 @@ function selectEvent(selector, eventData = defaultEventData, root = document.doc
       event.element = elem;
       eventData.during(event);
     }
-
+    
     // after
     event.position = EventPosition.after;
     eventData.after(event);
@@ -169,37 +169,37 @@ selectEvent(SELECTOR, {
       return;
     stylesheet = "";
   },
-
+  
   during: (event) => {
     var elem = event.element;
-
+    
     var cssToAdd = elem.innerText.trim();
     cssToAdd = cssToAdd.ifStartsWithReplace(PREFIX);
     cssToAdd = cssToAdd.ifEndsWithReplace(SUFFIX);
-
+    
     if (cssToAdd === elem.innerText) {
       // nothing changed
       return;
     }
-
+    
     stylesheet += cssToAdd;
-
+    
     elem.parentElement.hidden = true;
   },
-
+  
   after: (event) => {
     stylesheet = stylesheet.trim();
-
+    
     var exists = !!styleElement;
     var changed = exists && stylesheet !== styleElement.textContent;
-
+    
     if (!exists) {
       styleElement = document.createElement("style");
       styleElement.id = ELEMENT_ID;
     }
     if (changed)
       styleElement.textContent = stylesheet;
-
+    
     if (!exists)
       document.head.append(styleElement);
   },
