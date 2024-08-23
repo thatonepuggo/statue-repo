@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       *://github.com/**
 // @grant       none
-// @version     1.2
+// @version     1.3
 // @author      Pug
 // @description allows css injection on github
 // @downloadURL https://github.com/thatonepuggo/statue-repo/raw/master/docs/githubcssinjector.user.js
