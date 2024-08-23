@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       *://github.com/**
 // @grant       none
-// @version     1.3
+// @version     1.4
 // @author      Pug
 // @description allows css injection on github
 // @downloadURL https://github.com/thatonepuggo/statue-repo/raw/master/docs/githubcssinjector.user.js
@@ -43,14 +43,18 @@ String.prototype.reverse = String.prototype.reverse || function() {
 };
 
 String.prototype.ifStartsWithReplace = String.prototype.ifStartsWithReplace || function(check, replace = "") {
-  if (this.startsWith(check)) {
+  let pass = this.startsWith(check);
+  //console.log(`${this} ${!!pass ? 'starts with' : 'doesn\'t start with'} ${check}`);
+  if (pass) {
     return replace + this.substr(check.length);
   }
   return this;
 };
 
 String.prototype.ifEndsWithReplace = String.prototype.ifEndsWithReplace || function(check, replace = "") {
-  if (this.endsWith(check)) {
+  let pass = this.endsWith(check);
+  //console.log(`${this} ${!!pass ? 'ends with' : 'doesn\'t end with'} ${check}`);
+  if (pass) {
     // there might be a better way of doing this but idc
     return this.reverse().substr(check.length).reverse() + replace;
   }
@@ -73,7 +77,7 @@ function applySelector(selector, records) {
   for (const {addedNodes} of records) {
     for (const node of addedNodes) {
       // If it's an element...
-      if (node.nodeType === 1) {
+      if (node.nodeType === Node.ELEMENT_NODE) {
         // Add it if it's a match
         if (node.matches(selector)) {
           result.add(node);
@@ -114,53 +118,55 @@ function selectEvent(selector, eventData = defaultEventData, root = document.doc
     selector: selector,
     position: EventPosition.before,
   };
-  
-  
+
+
   const observer = new MutationObserver((records) => {
-    var event = defaultEvent;
+    let event = defaultEvent;
     event.caller = EventCaller.observer;
-    
+
     // before
     eventData.before(event);
-    
+
     // during
     event.position = EventPosition.during;
-    var elems = applySelector(selector, records);
+    let elems = applySelector(selector, records);
     for (const elem of elems) {
       event.element = elem;
       eventData.during(event);
     }
-    
+
     // after
     event.position = EventPosition.after;
     eventData.after(event);
   });
-  
+
   observer.observe(root, { childList: true, subtree: true });
-  
-  
+
+
   setInterval(() => {
-    var event = defaultEvent;
+    let event = defaultEvent;
     event.caller = EventCaller.interval;
-    
+
     // before
     eventData.before(event);
-    
+
     // during
     event.position = EventPosition.during;
-    var elems = root.querySelectorAll(selector);
+    let elems = root.querySelectorAll(selector);
     for (const elem of elems) {
       event.element = elem;
       eventData.during(event);
     }
-    
+
     // after
     event.position = EventPosition.after;
     eventData.after(event);
   }, 1000);
 }
 
+//////////
 // main //
+//////////
 
 selectEvent(SELECTOR, {
   before: (event) => {
@@ -168,37 +174,39 @@ selectEvent(SELECTOR, {
       return;
     stylesheet = "";
   },
-  
+
+  // ran for every element
   during: (event) => {
-    var elem = event.element;
-    
-    var cssToAdd = elem.innerText.trim();
+    let elem = event.element;
+
+    let cssToAdd = elem.textContent.trim();
+    let original = cssToAdd;
+
     cssToAdd = cssToAdd.ifStartsWithReplace(PREFIX);
     cssToAdd = cssToAdd.ifEndsWithReplace(SUFFIX);
-    
-    if (cssToAdd === elem.innerText) {
+    if (cssToAdd == original) {
       // nothing changed
       return;
     }
-    
+
     stylesheet += cssToAdd;
-    
+
     elem.parentElement.hidden = true;
   },
-  
+
   after: (event) => {
     stylesheet = stylesheet.trim();
-    
-    var exists = !!styleElement;
-    var changed = exists && stylesheet !== styleElement.textContent;
-    
+
+    let exists = !!styleElement;
+    let changed = exists && stylesheet !== styleElement.textContent;
+
     if (!exists) {
       styleElement = document.createElement("style");
       styleElement.id = ELEMENT_ID;
     }
     if (changed)
       styleElement.textContent = stylesheet;
-    
+
     if (!exists)
       document.head.append(styleElement);
   },
